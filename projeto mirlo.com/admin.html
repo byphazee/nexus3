@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NexusLoot Admin</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+*{
+  font-family:Inter,Arial,sans-serif;
+}
+
+body{
+  background:
+    radial-gradient(circle at top left, rgba(168,85,247,.13), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(34,211,238,.08), transparent 30%),
+    #050008;
+  color:white;
+  overflow-x:hidden;
+}
+
+.card{
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.09);
+  backdrop-filter:blur(18px);
+}
+
+.glow{
+  box-shadow:0 0 35px rgba(168,85,247,.35);
+}
+
+.sidebar-btn{
+  color:#a1a1aa;
+  transition:.25s;
+}
+
+.sidebar-btn.active{
+  color:white;
+  background:linear-gradient(135deg,rgba(168,85,247,.22),rgba(34,211,238,.06));
+  border-left:4px solid #a855f7;
+}
+
+.sidebar-btn:hover{
+  color:white;
+  background:rgba(255,255,255,.06);
+}
+
+.view{
+  display:none;
+}
+
+.view.active{
+  display:block;
+}
+
+::-webkit-scrollbar{
+  width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#7c3aed;
+  border-radius:20px;
+}
+</style>
+</head>
+
+<body style="display:none;">
+
+<div class="min-h-screen flex">
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-[230px] border-r border-white/10 bg-black/35 backdrop-blur-xl flex-col justify-between fixed left-0 top-0 bottom-0">
+
+    <div>
+
+      <div class="p-7 border-b border-white/10">
+
+        <h1 class="text-3xl font-black leading-none">
+          NEXUS
+          <span class="block bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+            LOOT
+          </span>
+        </h1>
+
+        <p class="text-zinc-500 mt-3 text-sm">
+          Painel Admin
+        </p>
+
+      </div>
+
+      <nav class="mt-8 space-y-2 px-3">
+
+        <button
+          id="btnDashboard"
+          onclick="showView('dashboard')"
+          class="sidebar-btn active w-full flex items-center gap-4 px-5 py-5 rounded-2xl text-left font-bold"
+        >
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 11L12 3l9 8"></path>
+            <path d="M5 10v10h14V10"></path>
+          </svg>
+
+          <span>Rendimento</span>
+        </button>
+
+        <button
+          id="btnSupport"
+          onclick="showView('support')"
+          class="sidebar-btn w-full flex items-center gap-4 px-5 py-5 rounded-2xl text-left font-bold"
+        >
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+          </svg>
+
+          <span>Suporte</span>
+        </button>
+
+        <button
+          id="btnProducts"
+          onclick="showView('products')"
+          class="sidebar-btn w-full flex items-center gap-4 px-5 py-5 rounded-2xl text-left font-bold"
+        >
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+          </svg>
+
+          <span>Produtos</span>
+        </button>
+
+      </nav>
+
+    </div>
+
+    <div class="p-5">
+
+      <button
+        onclick="logout()"
+        class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-zinc-300 hover:text-white hover:bg-red-600/15 transition font-bold"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M10 17l5-5-5-5"></path>
+          <path d="M15 12H3"></path>
+          <path d="M21 3v18"></path>
+        </svg>
+
+        <span>Sair</span>
+      </button>
+
+    </div>
+
+  </aside>
+
+  <!-- MOBILE NAV -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-xl border-t border-white/10 p-3">
+
+    <div class="grid grid-cols-4 gap-2">
+
+      <button onclick="showView('dashboard')" class="mobile-btn bg-white/5 rounded-2xl p-3 flex justify-center">
+        <svg class="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 11L12 3l9 8"></path>
+          <path d="M5 10v10h14V10"></path>
+        </svg>
+      </button>
+
+      <button onclick="showView('support')" class="mobile-btn bg-white/5 rounded-2xl p-3 flex justify-center">
+        <svg class="w-6 h-6 text-cyan-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+        </svg>
+      </button>
+
+      <button onclick="showView('products')" class="mobile-btn bg-white/5 rounded-2xl p-3 flex justify-center">
+        <svg class="w-6 h-6 text-fuchsia-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 20h9"></path>
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+        </svg>
+      </button>
+
+      <button onclick="logout()" class="bg-red-600/20 rounded-2xl p-3 flex justify-center">
+        <svg class="w-6 h-6 text-red-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M10 17l5-5-5-5"></path>
+          <path d="M15 12H3"></path>
+          <path d="M21 3v18"></path>
+        </svg>
+      </button>
+
+    </div>
+
+  </nav>
+
+  <!-- MAIN -->
+  <main class="w-full md:ml-[230px] px-4 md:px-10 py-7 pb-28 md:pb-10">
+
+    <!-- TOP BAR -->
+    <header class="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8">
+
+      <div>
+        <h2 id="pageTitle" class="text-4xl md:text-5xl font-black">
+          Rendimento
+        </h2>
+
+        <p id="pageSubtitle" class="text-zinc-500 mt-2">
+          Acompanhe o desempenho da sua loja
+        </p>
+      </div>
+
+      <div class="flex gap-3 items-center">
+
+        <div class="hidden md:block px-5 py-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-300 font-bold">
+          NexusAdmin
+        </div>
+
+        <button
+          onclick="logout()"
+          class="md:hidden bg-red-600 px-5 py-3 rounded-2xl font-bold"
+        >
+          Sair
+        </button>
+
+      </div>
+
+    </header>
+        <!-- DASHBOARD VIEW -->
+    <section id="view-dashboard" class="view active">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-7">
+
+        <div class="card rounded-[28px] p-6">
+          <div class="flex justify-between items-start gap-4">
+
+            <div>
+              <p class="text-zinc-400 font-bold">
+                Receita Total
+              </p>
+
+              <h3 id="revenue-total" class="text-3xl md:text-4xl font-black mt-4 text-purple-400">
+                R$ 0,00
+              </h3>
+
+              <p class="text-green-400 text-sm mt-4">
+                Pagamentos aprovados
+              </p>
+            </div>
+
+            <div class="w-14 h-14 rounded-2xl bg-purple-600/20 border border-purple-500/20 flex items-center justify-center text-purple-300">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 1v22"></path>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card rounded-[28px] p-6">
+          <div class="flex justify-between items-start gap-4">
+
+            <div>
+              <p class="text-zinc-400 font-bold">
+                Pedidos
+              </p>
+
+              <h3 id="orders-count" class="text-3xl md:text-4xl font-black mt-4 text-blue-400">
+                0
+              </h3>
+
+              <p class="text-zinc-500 text-sm mt-4">
+                Total de pedidos
+              </p>
+            </div>
+
+            <div class="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/20 flex items-center justify-center text-blue-300">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M6 2l1.5 4h9L18 2"></path>
+                <path d="M3 6h18l-2 16H5L3 6z"></path>
+              </svg>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card rounded-[28px] p-6">
+          <div class="flex justify-between items-start gap-4">
+
+            <div>
+              <p class="text-zinc-400 font-bold">
+                Tickets
+              </p>
+
+              <h3 id="tickets-count" class="text-3xl md:text-4xl font-black mt-4 text-yellow-400">
+                0
+              </h3>
+
+              <p class="text-zinc-500 text-sm mt-4">
+                Suportes criados
+              </p>
+            </div>
+
+            <div class="w-14 h-14 rounded-2xl bg-yellow-500/20 border border-yellow-500/20 flex items-center justify-center text-yellow-300">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+              </svg>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card rounded-[28px] p-6">
+          <div class="flex justify-between items-start gap-4">
+
+            <div>
+              <p class="text-zinc-400 font-bold">
+                Estoque
+              </p>
+
+              <h3 id="stock-count" class="text-3xl md:text-4xl font-black mt-4 text-green-400">
+                0
+              </h3>
+
+              <p class="text-zinc-500 text-sm mt-4">
+                Contas disponíveis
+              </p>
+            </div>
+
+            <div class="w-14 h-14 rounded-2xl bg-green-600/20 border border-green-500/20 flex items-center justify-center text-green-300">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <path d="M3.3 7L12 12l8.7-5"></path>
+                <path d="M12 22V12"></path>
+              </svg>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <div class="card rounded-[30px] p-6 xl:col-span-2">
+
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-2xl font-black">
+                Resumo da Loja
+              </h3>
+
+              <p class="text-zinc-500 mt-1">
+                Status geral do marketplace
+              </p>
+            </div>
+
+            <span class="px-4 py-2 rounded-2xl bg-green-500/10 text-green-400 border border-green-500/20 font-bold">
+              Online
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <div class="bg-black/30 rounded-3xl p-5 border border-white/10">
+              <p class="text-zinc-500">
+                Produtos
+              </p>
+
+              <h4 id="products-count" class="text-4xl font-black mt-3">
+                0
+              </h4>
+            </div>
+
+            <div class="bg-black/30 rounded-3xl p-5 border border-white/10">
+              <p class="text-zinc-500">
+                Pagamentos
+              </p>
+
+              <h4 id="payments-count" class="text-4xl font-black mt-3">
+                0
+              </h4>
+            </div>
+
+            <div class="bg-black/30 rounded-3xl p-5 border border-white/10">
+              <p class="text-zinc-500">
+                Sistema
+              </p>
+
+              <h4 class="text-4xl font-black mt-3 text-purple-400">
+                ON
+              </h4>
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="card rounded-[30px] p-6">
+
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-2xl font-black">
+              Últimos Tickets
+            </h3>
+
+            <button onclick="showView('support')" class="text-purple-400 font-bold">
+              Ver todos
+            </button>
+          </div>
+
+          <div id="recentTickets" class="space-y-3">
+            <p class="text-zinc-500">
+              Nenhum ticket ainda.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="card rounded-[30px] p-6 mt-6">
+
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-2xl font-black">
+            Pagamentos Recentes
+          </h3>
+
+          <button onclick="showView('products')" class="text-purple-400 font-bold">
+            Gerenciar
+          </button>
+        </div>
+
+        <div id="recentPayments" class="space-y-3">
+          <p class="text-zinc-500">
+            Nenhum pagamento ainda.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+        <!-- SUPPORT VIEW -->
+    <section id="view-support" class="view">
+
+      <!-- Header -->
+      <div class="card rounded-[30px] p-5 md:p-7 mb-6 border border-purple-500/20">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-purple-600/20 border border-purple-500/20 flex items-center justify-center shrink-0">
+              <svg class="w-7 h-7 text-purple-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-3xl font-black">Suporte</h3>
+              <p class="text-zinc-500 mt-1">Gerencie os tickets dos clientes em tempo real.</p>
+            </div>
+          </div>
+
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="filterTickets('all')" class="ticket-filter px-5 py-3 rounded-2xl font-bold bg-purple-600 text-white transition">
+              Todos
+            </button>
+            <button onclick="filterTickets('open')" class="ticket-filter px-5 py-3 rounded-2xl font-bold bg-white/10 hover:bg-white/15 transition">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 inline-block"></span>
+                Abertos
+              </span>
+            </button>
+            <button onclick="filterTickets('closed')" class="ticket-filter px-5 py-3 rounded-2xl font-bold bg-white/10 hover:bg-white/15 transition">
+              <span class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-400 inline-block"></span>
+                Fechados
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tickets" class="space-y-4"></div>
+
+    </section>
+
+    <!-- PRODUCTS VIEW -->
+    <section id="view-products" class="view">
+
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <section class="card rounded-[30px] p-5 md:p-7 xl:col-span-1">
+
+          <h3 class="text-3xl font-black mb-6">
+            Criar Produto
+          </h3>
+
+          <div class="space-y-4">
+
+            <input
+              id="name"
+              placeholder="Nome do produto"
+              class="w-full bg-zinc-950/80 border border-white/10 p-4 rounded-2xl outline-none focus:border-purple-500"
+            >
+
+            <input
+              id="price"
+              type="number"
+              placeholder="Preço"
+              class="w-full bg-zinc-950/80 border border-white/10 p-4 rounded-2xl outline-none focus:border-purple-500"
+            >
+
+            <input
+              id="image"
+              placeholder="Imagem do produto URL"
+              class="w-full bg-zinc-950/80 border border-white/10 p-4 rounded-2xl outline-none focus:border-purple-500"
+            >
+
+            <textarea
+              id="description"
+              placeholder="Descrição do produto"
+              class="w-full h-28 bg-zinc-950/80 border border-white/10 p-4 rounded-2xl outline-none focus:border-purple-500 resize-none"
+            ></textarea>
+
+            <select
+              id="categorySelect"
+              class="w-full bg-zinc-950/80 border border-white/10 p-4 rounded-2xl outline-none focus:border-purple-500"
+            >
+              <option value="">Selecionar categoria</option>
+              <option value="new">+ Criar nova categoria</option>
+            </select>
+
+            <input
+              id="newCategory"
+              placeholder="Nova categoria"
+              class="hidden w-full bg-zinc-950/80 border border-white/10 p-4 rounded-2xl outline-none focus:border-purple-500"
+            >
+
+            <input
+              id="categoryImage"
+              placeholder="Imagem da categoria URL"
+              class="hidden w-full bg-zinc-950/80 border border-white/10 p-4 rounded-2xl outline-none focus:border-purple-500"
+            >
+
+            <select
+              id="type"
+              class="w-full bg-zinc-950/80 border border-white/10 p-4 rounded-2xl outline-none focus:border-purple-500"
+            >
+              <option value="auto">Auto</option>
+              <option value="manual">Manual</option>
+            </select>
+
+            <p id="categoryHelp" class="text-zinc-500 text-sm">
+              Selecione uma categoria existente ou crie uma nova.
+            </p>
+
+            <button
+              id="createProduct"
+              class="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 p-4 rounded-2xl font-black glow"
+            >
+              Criar Produto
+            </button>
+
+          </div>
+
+        </section>
+
+        <section class="xl:col-span-2">
+
+          <div class="card rounded-[30px] p-5 md:p-7 mb-6">
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+              <div>
+                <h3 class="text-3xl font-black">
+                  Produtos & Estoque
+                </h3>
+
+                <p class="text-zinc-500 mt-2">
+                  Adicione várias contas de estoque de uma vez, uma por linha.
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div id="products" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+
+        </section>
+
+      </div>
+
+      <div class="card rounded-[30px] p-5 md:p-7 mt-6">
+
+        <h3 class="text-3xl font-black mb-6">
+          Pagamentos
+        </h3>
+
+        <div id="payments" class="space-y-5"></div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+<!-- TICKET MODAL -->
+<div
+  id="ticketModal"
+  class="hidden fixed inset-0 bg-black/85 backdrop-blur-2xl z-[999999] items-center justify-center px-4"
+>
+  <div class="w-full max-w-3xl bg-[#06020e] border border-purple-500/25 rounded-[32px] overflow-hidden shadow-2xl shadow-purple-950/50 flex flex-col" style="max-height:90vh;">
+
+    <!-- Header -->
+    <div class="border-b border-white/10 p-5 md:p-6 flex items-center justify-between gap-4 bg-black/30">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-purple-600/20 border border-purple-500/20 flex items-center justify-center shrink-0">
+          <svg class="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 id="ticketTitle" class="text-2xl font-black">Ticket</h3>
+          <p id="ticketUser" class="text-zinc-500 text-sm mt-0.5">usuário</p>
+        </div>
+      </div>
+      <button onclick="closeTicketModal()" class="w-10 h-10 rounded-2xl bg-white/10 hover:bg-white/15 flex items-center justify-center text-zinc-400 hover:text-white transition text-xl">
+        ✕
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div id="ticketMessages" class="flex-1 overflow-y-auto p-5 md:p-6 space-y-4 bg-black/20" style="max-height:380px;scrollbar-width:thin;scrollbar-color:#7c3aed transparent;"></div>
+
+    <!-- Input -->
+    <div class="border-t border-white/10 p-5 bg-black/30">
+      <div class="flex gap-3 items-end">
+        <textarea
+          id="adminMessage"
+          placeholder="Digite sua mensagem..."
+          class="flex-1 h-24 bg-zinc-950 border border-white/10 rounded-2xl p-4 outline-none resize-none focus:border-purple-500 transition"
+        ></textarea>
+        <div class="flex flex-col gap-2 shrink-0">
+          <button onclick="sendAdminMessage()" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-fuchsia-600 glow flex items-center justify-center hover:scale-105 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/>
+            </svg>
+          </button>
+          <button onclick="finishTicket()" class="w-12 h-12 rounded-2xl bg-green-600 hover:bg-green-500 flex items-center justify-center hover:scale-105 transition" title="Finalizar Ticket">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="text-zinc-600 text-xs mt-3 text-center">Enter para enviar • Botão verde para finalizar o ticket</p>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+
+import { auth, db } from "./firebase.js"
+
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
+
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+
+const productsDiv =
+  document.getElementById("products")
+
+const paymentsDiv =
+  document.getElementById("payments")
+
+const ticketsDiv =
+  document.getElementById("tickets")
+
+const ticketModal =
+  document.getElementById("ticketModal")
+
+const ticketMessages =
+  document.getElementById("ticketMessages")
+
+const ticketTitle =
+  document.getElementById("ticketTitle")
+
+const ticketUser =
+  document.getElementById("ticketUser")
+
+const adminMessage =
+  document.getElementById("adminMessage")
+
+let currentTicketId = null
+let currentTicketData = null
+let unsubscribeTicketMessages = null
+let currentTicketFilter = "all"
+
+onAuthStateChanged(auth,user=>{
+
+  if(!user){
+
+    window.location.href =
+      "index.html"
+
+    return
+  }
+
+  if(user.email !== "byphaze@dono.com"){
+
+    alert("Acesso negado.")
+
+    window.location.href =
+      "index.html"
+
+    return
+  }
+
+  document.body.style.display =
+    "block"
+})
+
+window.showView = function(view){
+
+  document.querySelectorAll(".view").forEach(el=>{
+    el.classList.remove("active")
+  })
+
+  document.getElementById("view-" + view)
+    .classList.add("active")
+
+  document.querySelectorAll(".sidebar-btn")
+    .forEach(btn=>{
+      btn.classList.remove("active")
+    })
+
+  if(view === "dashboard"){
+
+    document.getElementById("btnDashboard")
+      .classList.add("active")
+
+    document.getElementById("pageTitle")
+      .innerText = "Rendimento"
+
+    document.getElementById("pageSubtitle")
+      .innerText = "Acompanhe o desempenho da sua loja"
+  }
+
+  if(view === "support"){
+
+    document.getElementById("btnSupport")
+      .classList.add("active")
+
+    document.getElementById("pageTitle")
+      .innerText = "Suporte"
+
+    document.getElementById("pageSubtitle")
+      .innerText = "Gerencie os tickets dos clientes"
+  }
+
+  if(view === "products"){
+
+    document.getElementById("btnProducts")
+      .classList.add("active")
+
+    document.getElementById("pageTitle")
+      .innerText = "Produtos"
+
+    document.getElementById("pageSubtitle")
+      .innerText = "Gerencie produtos, estoque e pagamentos"
+  }
+}
+
+document.getElementById("categorySelect")
+  .addEventListener("change",e=>{
+
+    const isNew =
+      e.target.value === "new"
+
+    document.getElementById("newCategory")
+      .classList.toggle("hidden",!isNew)
+
+    document.getElementById("categoryImage")
+      .classList.toggle("hidden",!isNew)
+})
+
+const categoriesMap = {}
+document.getElementById("createProduct").onclick =
+async ()=>{
+
+  const name =
+    document.getElementById("name").value.trim()
+
+  const price =
+    Number(document.getElementById("price").value)
+
+  const image =
+    document.getElementById("image").value.trim()
+
+  const description =
+    document.getElementById("description").value.trim()
+
+  const type =
+    document.getElementById("type").value
+
+  let category =
+    document.getElementById("categorySelect").value
+
+  let categoryImage = ""
+
+  if(category === "new"){
+
+    category =
+      document.getElementById("newCategory").value.trim()
+
+    categoryImage =
+      document.getElementById("categoryImage").value.trim()
+
+  }else{
+
+    categoryImage =
+      categoriesMap[category] || ""
+  }
+
+  if(!name || !price || !image || !category){
+
+    alert("Preencha nome, preço, imagem e categoria.")
+    return
+  }
+
+  await addDoc(collection(db,"products"),{
+    name,
+    price,
+    image,
+    description,
+    category,
+    categoryImage,
+    type,
+    accounts:[],
+    createdAt:serverTimestamp()
+  })
+
+  alert("Produto criado!")
+
+  document.getElementById("name").value = ""
+  document.getElementById("price").value = ""
+  document.getElementById("image").value = ""
+  document.getElementById("description").value = ""
+  document.getElementById("newCategory").value = ""
+  document.getElementById("categoryImage").value = ""
+}
+
+onSnapshot(collection(db,"products"),snapshot=>{
+
+  productsDiv.innerHTML = ""
+
+  let stockTotal = 0
+
+  document.getElementById("products-count").innerText =
+    snapshot.size
+
+  Object.keys(categoriesMap).forEach(key=>{
+    delete categoriesMap[key]
+  })
+
+  // 1. Acumular todos os produtos e montar categoriesMap
+  const allProducts = []
+
+  snapshot.forEach(docSnap=>{
+
+    const product = {
+      id:docSnap.id,
+      ...docSnap.data()
+    }
+
+    if(product.category && !categoriesMap[product.category]){
+      categoriesMap[product.category] =
+        product.categoryImage || product.image || ""
+    }
+
+    stockTotal +=
+      product.accounts?.length || 0
+
+    allProducts.push(product)
+  })
+
+  // 2. Agrupar produtos por categoria
+  const grouped = {}
+
+  allProducts.forEach(product=>{
+
+    const cat = product.category || "Sem categoria"
+
+    if(!grouped[cat]){
+      grouped[cat] = []
+    }
+
+    grouped[cat].push(product)
+  })
+
+  // 3. Renderizar seção por categoria
+  Object.keys(grouped).forEach(category=>{
+
+    const catImage =
+      categoriesMap[category] || ""
+
+    // Cabeçalho da categoria — ocupa toda a largura do grid
+    productsDiv.innerHTML += `
+      <div class="col-span-full flex items-center gap-4 mt-6 mb-2">
+
+        ${catImage ? `
+          <img
+            src="${catImage}"
+            class="w-10 h-10 rounded-xl object-cover border border-white/10"
+          >
+        ` : ""}
+
+        <h4 class="text-xl font-black text-purple-300 uppercase tracking-widest">
+          ${category}
+        </h4>
+
+        <div class="flex-1 h-px bg-white/10"></div>
+
+        <span class="text-zinc-500 text-sm font-bold">
+          ${grouped[category].length} produto(s)
+        </span>
+
+      </div>
+    `
+
+    // Cards dos produtos dessa categoria
+    grouped[category].forEach(product=>{
+
+      productsDiv.innerHTML += `
+        <div class="card rounded-[30px] overflow-hidden">
+
+          <img
+            src="${product.image}"
+            class="w-full h-48 object-cover"
+          >
+
+          <div class="p-5">
+
+            <div class="flex gap-2 flex-wrap mb-3">
+
+              <span class="bg-purple-600 px-3 py-1 rounded-full text-xs font-black">
+                ${product.category || "Sem categoria"}
+              </span>
+
+              <span class="bg-zinc-700 px-3 py-1 rounded-full text-xs font-black">
+                ${product.type || "auto"}
+              </span>
+
+            </div>
+
+            <h3 class="text-2xl font-black">
+              ${product.name}
+            </h3>
+
+            <p class="text-zinc-500 text-sm mt-2 line-clamp-3">
+              ${product.description || "Sem descrição"}
+            </p>
+
+            <p class="text-purple-400 text-3xl font-black mt-4">
+              R$ ${Number(product.price).toFixed(2)}
+            </p>
+
+            <p class="text-green-400 font-bold mt-2">
+              Estoque: ${product.accounts?.length || 0}
+            </p>
+
+            <textarea
+              id="stock-${product.id}"
+              placeholder="Cole várias contas aqui, uma por linha&#10;exemplo: usuario:senha&#10;exemplo2:senha2"
+              class="w-full h-32 mt-5 bg-zinc-950 border border-white/10 rounded-2xl p-4 outline-none resize-none focus:border-purple-500"
+            ></textarea>
+
+            <button
+              onclick="addStock('${product.id}')"
+              class="w-full mt-4 bg-green-600 hover:bg-green-500 p-4 rounded-2xl font-black"
+            >
+              Adicionar Estoque em Massa
+            </button>
+
+            <button
+              onclick="deleteProduct('${product.id}')"
+              class="w-full mt-3 bg-red-600 hover:bg-red-500 p-4 rounded-2xl font-black"
+            >
+              Deletar Produto
+            </button>
+
+          </div>
+
+        </div>
+      `
+    })
+  })
+
+  document.getElementById("stock-count").innerText =
+    stockTotal
+
+  updateCategoryOptions()
+})
+
+function updateCategoryOptions(){
+
+  const select =
+    document.getElementById("categorySelect")
+
+  const current =
+    select.value
+
+  select.innerHTML = `
+    <option value="">
+      Selecionar categoria
+    </option>
+
+    <option value="new">
+      + Criar nova categoria
+    </option>
+  `
+
+  Object.keys(categoriesMap).forEach(category=>{
+
+    select.innerHTML += `
+      <option value="${category}">
+        ${category}
+      </option>
+    `
+  })
+
+  select.value =
+    current
+}
+window.addStock = async function(productId){
+
+  const textarea =
+    document.getElementById("stock-" + productId)
+
+  const text =
+    textarea.value.trim()
+
+  if(!text){
+
+    alert("Cole pelo menos uma conta.")
+    return
+  }
+
+  const newAccounts =
+    text
+      .split("\n")
+      .map(account=>account.trim())
+      .filter(account=>account !== "")
+
+  if(newAccounts.length === 0){
+
+    alert("Nenhuma conta válida encontrada.")
+    return
+  }
+
+  const productRef =
+    doc(db,"products",productId)
+
+  const productSnap =
+    await getDoc(productRef)
+
+  if(!productSnap.exists()){
+
+    alert("Produto não encontrado.")
+    return
+  }
+
+  const product =
+    productSnap.data()
+
+  const currentAccounts =
+    product.accounts || []
+
+  const mergedAccounts =
+    [
+      ...currentAccounts,
+      ...newAccounts
+    ]
+
+  await updateDoc(productRef,{
+    accounts:mergedAccounts
+  })
+
+  textarea.value = ""
+
+  alert(`${newAccounts.length} conta(s) adicionada(s) ao estoque.`)
+}
+
+window.deleteProduct = async function(productId){
+
+  if(!confirm("Deseja deletar este produto?")) return
+
+  await deleteDoc(doc(db,"products",productId))
+
+  alert("Produto deletado.")
+}
+
+onSnapshot(collection(db,"payments"),snapshot=>{
+
+  paymentsDiv.innerHTML = ""
+
+  document.getElementById("payments-count").innerText =
+    snapshot.size
+
+  let revenueTotal = 0
+
+  if(snapshot.empty){
+
+    paymentsDiv.innerHTML = `
+      <div class="card rounded-3xl p-8 text-center text-zinc-500">
+        Nenhum pagamento ainda.
+      </div>
+    `
+
+    document.getElementById("recentPayments").innerHTML = `
+      <p class="text-zinc-500">
+        Nenhum pagamento ainda.
+      </p>
+    `
+
+    document.getElementById("revenue-total").innerText =
+      "R$ 0,00"
+
+    return
+  }
+
+  const recentPayments = []
+
+  snapshot.forEach(docSnap=>{
+
+    const payment =
+      docSnap.data()
+
+    if(payment.status === "aprovado"){
+
+      revenueTotal +=
+        Number(payment.value || payment.total || 0)
+    }
+
+    recentPayments.push({
+      id:docSnap.id,
+      ...payment
+    })
+
+    paymentsDiv.innerHTML += `
+      <div class="card rounded-[28px] p-5">
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
+
+          <div>
+
+            <h3 class="text-2xl font-black">
+              ${payment.product || "Pagamento"}
+            </h3>
+
+            <p class="text-zinc-500 mt-2">
+              ${payment.userEmail || ""}
+            </p>
+
+            <p class="text-zinc-400 mt-2">
+              Status:
+              <span class="${
+                payment.status === "aprovado"
+                ? "text-green-400"
+                : "text-yellow-400"
+              } font-bold">
+                ${payment.status || "aguardando"}
+              </span>
+            </p>
+
+            ${
+              payment.items
+              ? `
+                <div class="mt-3 text-sm text-zinc-500">
+                  ${payment.items.map(item=>`• ${item.product} (${item.type})`).join("<br>")}
+                </div>
+              `
+              : ""
+            }
+
+          </div>
+
+          <div class="text-left md:text-right">
+
+            <p class="text-green-400 text-3xl font-black">
+              R$ ${Number(payment.value || payment.total || 0).toFixed(2)}
+            </p>
+
+            <div class="flex gap-3 mt-4 flex-wrap md:justify-end">
+
+              ${
+                payment.status !== "aprovado"
+                ? `
+                  <button
+                    onclick="approvePayment('${docSnap.id}')"
+                    class="bg-green-600 hover:bg-green-500 px-5 py-3 rounded-2xl font-black"
+                  >
+                    Aprovar
+                  </button>
+                `
+                : `
+                  <span class="text-green-400 font-bold px-3 py-3">
+                    Aprovado
+                  </span>
+                `
+              }
+
+              <button
+                onclick="deletePayment('${docSnap.id}')"
+                class="bg-red-600 hover:bg-red-500 px-5 py-3 rounded-2xl font-black"
+              >
+                Apagar
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    `
+  })
+
+  document.getElementById("revenue-total").innerText =
+    `R$ ${revenueTotal.toFixed(2)}`
+
+  renderRecentPayments(recentPayments)
+})
+
+function renderRecentPayments(payments){
+
+  const box =
+    document.getElementById("recentPayments")
+
+  const latest =
+    payments.slice(-5).reverse()
+
+  if(latest.length === 0){
+
+    box.innerHTML = `
+      <p class="text-zinc-500">
+        Nenhum pagamento ainda.
+      </p>
+    `
+
+    return
+  }
+
+  box.innerHTML = ""
+
+  latest.forEach(payment=>{
+
+    box.innerHTML += `
+      <div class="bg-black/30 border border-white/10 rounded-2xl p-4 flex justify-between gap-4">
+
+        <div>
+          <p class="font-black">
+            ${payment.product || "Pagamento"}
+          </p>
+
+          <p class="text-zinc-500 text-sm">
+            ${payment.status || "aguardando"}
+          </p>
+        </div>
+
+        <p class="text-green-400 font-black">
+          R$ ${Number(payment.value || payment.total || 0).toFixed(2)}
+        </p>
+
+      </div>
+    `
+  })
+}
+window.deletePayment = async function(paymentId){
+
+  if(!confirm("Deseja apagar esse pagamento e pedidos relacionados?")) return
+
+  const paymentRef =
+    doc(db,"payments",paymentId)
+
+  const paymentSnap =
+    await getDoc(paymentRef)
+
+  if(paymentSnap.exists()){
+
+    const payment =
+      paymentSnap.data()
+
+    if(payment.orderIds && Array.isArray(payment.orderIds)){
+
+      for(const orderId of payment.orderIds){
+
+        await deleteDoc(doc(db,"orders1",orderId))
+      }
+
+    }else if(payment.orderId){
+
+      await deleteDoc(doc(db,"orders1",payment.orderId))
+    }
+  }
+
+  await deleteDoc(paymentRef)
+
+  alert("Pagamento apagado.")
+}
+
+window.approvePayment = async function(paymentId){
+
+  const paymentRef =
+    doc(db,"payments",paymentId)
+
+  const paymentSnap =
+    await getDoc(paymentRef)
+
+  if(!paymentSnap.exists()){
+
+    alert("Pagamento não encontrado.")
+    return
+  }
+
+  const payment =
+    paymentSnap.data()
+
+  if(payment.status === "aprovado"){
+
+    alert("Esse pagamento já foi aprovado.")
+    return
+  }
+
+  async function approveSingleOrder(item,orderId){
+
+    if(!orderId){
+
+      alert("Pedido sem orderId.")
+      return
+    }
+
+    const orderRef =
+      doc(db,"orders1",orderId)
+
+    if((item.type || "auto") === "auto"){
+
+      const productRef =
+        doc(db,"products",item.productId)
+
+      const productSnap =
+        await getDoc(productRef)
+
+      if(!productSnap.exists()){
+
+        alert("Produto não encontrado: " + (item.product || "sem nome"))
+        return
+      }
+
+      const product =
+        productSnap.data()
+
+      if(!product.accounts || product.accounts.length === 0){
+
+        alert("Produto sem estoque: " + (item.product || product.name))
+        return
+      }
+
+      const deliveredAccount =
+        product.accounts[0]
+
+      const updatedAccounts =
+        product.accounts.slice(1)
+
+      await updateDoc(productRef,{
+        accounts:updatedAccounts
+      })
+
+      await updateDoc(orderRef,{
+        account:deliveredAccount,
+        status:"entregue",
+        message:"Pagamento aprovado. Produto entregue automaticamente."
+      })
+
+    }else{
+
+      const existingTicketQuery = query(
+        collection(db,"tickets"),
+        where("orderId","==",orderId)
+      )
+
+      const existingTicketSnap =
+        await getDocs(existingTicketQuery)
+
+      let ticketId = ""
+
+      if(existingTicketSnap.empty){
+
+        const ticketRef =
+          await addDoc(collection(db,"tickets"),{
+            orderId:orderId,
+            paymentId:paymentId,
+            userEmail:payment.userEmail,
+            product:item.product,
+            productId:item.productId,
+            status:"open",
+            createdAt:serverTimestamp(),
+            updatedAt:serverTimestamp()
+          })
+
+        ticketId =
+          ticketRef.id
+
+        await addDoc(collection(db,"tickets",ticketId,"messages"),{
+          sender:"system",
+          senderEmail:"system",
+          text:"Pagamento aprovado. O suporte foi aberto para entrega manual.",
+          createdAt:serverTimestamp()
+        })
+
+      }else{
+
+        ticketId =
+          existingTicketSnap.docs[0].id
+      }
+
+      await updateDoc(orderRef,{
+        status:"em suporte",
+        ticketId:ticketId,
+        message:"Pagamento aprovado. Clique em Abrir Suporte para combinar a entrega com o ADM."
+      })
+    }
+  }
+
+  if(payment.items && payment.orderIds){
+
+    for(let i = 0; i < payment.items.length; i++){
+
+      await approveSingleOrder(payment.items[i],payment.orderIds[i])
+    }
+
+  }else{
+
+    await approveSingleOrder({
+      product:payment.product,
+      productId:payment.productId,
+      type:payment.type || "auto"
+    },payment.orderId)
+  }
+
+  await updateDoc(paymentRef,{
+    status:"aprovado"
+  })
+
+  alert("Pagamento aprovado!")
+}
+
+onSnapshot(collection(db,"orders1"),snapshot=>{
+
+  document.getElementById("orders-count").innerText =
+    snapshot.size
+})
+
+onSnapshot(collection(db,"tickets"),snapshot=>{
+
+  const tickets =
+    []
+
+  snapshot.forEach(docSnap=>{
+
+    tickets.push({
+      id:docSnap.id,
+      ...docSnap.data()
+    })
+  })
+
+  document.getElementById("tickets-count").innerText =
+    tickets.length
+
+  renderTickets(tickets)
+
+  renderRecentTickets(tickets)
+})
+
+function filterTickets(status){
+
+  currentTicketFilter =
+    status
+
+  onSnapshot(collection(db,"tickets"),snapshot=>{
+
+    const tickets =
+      []
+
+    snapshot.forEach(docSnap=>{
+
+      tickets.push({
+        id:docSnap.id,
+        ...docSnap.data()
+      })
+    })
+
+    renderTickets(tickets)
+  })
+}
+
+window.filterTickets =
+  filterTickets
+
+function renderTickets(tickets){
+
+  ticketsDiv.innerHTML = ""
+
+  let filtered = tickets
+
+  if(currentTicketFilter !== "all"){
+    filtered = tickets.filter(ticket=>{
+      if(currentTicketFilter === "open") return ticket.status !== "closed"
+      return ticket.status === currentTicketFilter
+    })
+  }
+
+  if(filtered.length === 0){
+    ticketsDiv.innerHTML = `
+      <div class="card rounded-3xl p-10 text-center text-zinc-500 border border-white/5">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-white/5 flex items-center justify-center text-2xl mb-4">💬</div>
+        <p class="font-bold">Nenhum ticket encontrado.</p>
+      </div>
+    `
+    return
+  }
+
+  filtered.forEach(ticket=>{
+
+    const isClosed = ticket.status === "closed"
+
+    ticketsDiv.innerHTML += `
+      <div class="card rounded-[24px] p-5 border ${isClosed ? "border-white/5" : "border-purple-500/15"} hover:border-purple-500/30 transition-all">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl ${isClosed ? "bg-zinc-800" : "bg-purple-600/20 border border-purple-500/20"} flex items-center justify-center shrink-0">
+              <svg class="w-6 h-6 ${isClosed ? "text-zinc-500" : "text-purple-300"}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-3 flex-wrap">
+                <h3 class="text-xl font-black">${ticket.product || "Suporte Geral"}</h3>
+                <span class="px-3 py-1 rounded-full text-xs font-black ${isClosed ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"}">
+                  ${isClosed ? "Fechado" : "Aberto"}
+                </span>
+              </div>
+              <p class="text-zinc-500 text-sm mt-1">${ticket.userEmail || ""}</p>
+              ${ticket.orderId ? `<p class="text-zinc-600 text-xs mt-0.5">Pedido: ${ticket.orderId}</p>` : ""}
+            </div>
+          </div>
+
+          <div class="flex gap-2 flex-wrap shrink-0">
+            <button
+              onclick="openTicket('${ticket.id}')"
+              class="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 px-5 py-3 rounded-2xl font-black glow hover:scale-105 transition text-sm"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/>
+              </svg>
+              Abrir Chat
+            </button>
+            <button
+              onclick="deleteTicket('${ticket.id}')"
+              class="flex items-center gap-2 bg-red-600/20 hover:bg-red-600 border border-red-500/30 px-5 py-3 rounded-2xl font-black transition text-sm text-red-400 hover:text-white"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+              </svg>
+              Deletar
+            </button>
+          </div>
+
+        </div>
+      </div>
+    `
+  })
+}
+
+function renderRecentTickets(tickets){
+
+  const box =
+    document.getElementById("recentTickets")
+
+  const latest =
+    tickets.slice(-5).reverse()
+
+  if(latest.length === 0){
+
+    box.innerHTML = `
+      <p class="text-zinc-500">
+        Nenhum ticket ainda.
+      </p>
+    `
+
+    return
+  }
+
+  box.innerHTML = ""
+
+  latest.forEach(ticket=>{
+
+    box.innerHTML += `
+      <div class="bg-black/30 border border-white/10 rounded-2xl p-4">
+
+        <p class="font-black">
+          ${ticket.product || "Ticket"}
+        </p>
+
+        <p class="text-zinc-500 text-sm mt-1">
+          ${ticket.status === "closed" ? "Fechado" : "Aberto"}
+        </p>
+
+      </div>
+    `
+  })
+}
+window.openTicket = async function(ticketId){
+
+  currentTicketId =
+    ticketId
+
+  const ticketRef =
+    doc(db,"tickets",ticketId)
+
+  const ticketSnap =
+    await getDoc(ticketRef)
+
+  if(!ticketSnap.exists()){
+
+    alert("Ticket não encontrado.")
+    return
+  }
+
+  currentTicketData =
+    ticketSnap.data()
+
+  ticketTitle.innerText =
+    currentTicketData.product || "Ticket"
+
+  ticketUser.innerText =
+    currentTicketData.userEmail || ""
+
+  ticketModal.classList.remove("hidden")
+  ticketModal.classList.add("flex")
+
+  if(unsubscribeTicketMessages){
+
+    unsubscribeTicketMessages()
+  }
+
+  unsubscribeTicketMessages =
+    onSnapshot(
+      collection(db,"tickets",ticketId,"messages"),
+      snapshot=>{
+
+        ticketMessages.innerHTML = ""
+
+        if(snapshot.empty){
+
+          ticketMessages.innerHTML = `
+            <div class="text-center text-zinc-500 mt-20">
+              Nenhuma mensagem ainda.
+            </div>
+          `
+
+          return
+        }
+
+        snapshot.forEach(msgSnap=>{
+
+          const msg =
+            msgSnap.data()
+
+          const isAdmin =
+            msg.sender === "admin"
+
+          const isSystem =
+            msg.sender === "system"
+
+          ticketMessages.innerHTML += `
+            <div class="flex ${isSystem ? "justify-center" : isAdmin ? "justify-end" : "justify-start"}">
+              <div class="
+                rounded-[18px] px-4 py-3 break-words
+                ${
+                  isSystem
+                  ? "bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 text-xs text-center max-w-[90%] py-2 px-5 rounded-full"
+                  : isAdmin
+                    ? "bg-gradient-to-br from-purple-600 to-fuchsia-700 text-white max-w-[75%] shadow-lg shadow-purple-950/40"
+                    : "bg-zinc-900 border border-white/10 text-white max-w-[75%]"
+                }
+              ">
+                ${!isSystem ? `<p class="text-[11px] opacity-60 mb-1 font-bold">${isAdmin ? "ADM" : "Cliente"}</p>` : ""}
+                <p class="text-sm leading-relaxed">${msg.text || ""}</p>
+              </div>
+            </div>
+          `
+        })
+
+        ticketMessages.scrollTop =
+          ticketMessages.scrollHeight
+      }
+    )
+}
+
+window.closeTicketModal = function(){
+
+  ticketModal.classList.add("hidden")
+  ticketModal.classList.remove("flex")
+
+  currentTicketId = null
+  currentTicketData = null
+  adminMessage.value = ""
+
+  if(unsubscribeTicketMessages){
+
+    unsubscribeTicketMessages()
+    unsubscribeTicketMessages = null
+  }
+}
+
+window.sendAdminMessage = async function(){
+
+  const text =
+    adminMessage.value.trim()
+
+  if(!currentTicketId){
+
+    alert("Nenhum ticket aberto.")
+    return
+  }
+
+  if(!text){
+
+    alert("Digite uma mensagem.")
+    return
+  }
+
+  if(currentTicketData?.status === "closed"){
+
+    alert("Este ticket já está fechado.")
+    return
+  }
+
+  await addDoc(collection(db,"tickets",currentTicketId,"messages"),{
+    sender:"admin",
+    senderEmail:auth.currentUser.email,
+    text,
+    createdAt:serverTimestamp()
+  })
+
+  await updateDoc(doc(db,"tickets",currentTicketId),{
+    updatedAt:serverTimestamp()
+  })
+
+  adminMessage.value = ""
+}
+
+window.finishTicket = async function(){
+
+  if(!currentTicketId || !currentTicketData){
+
+    alert("Nenhum ticket aberto.")
+    return
+  }
+
+  if(currentTicketData.status === "closed"){
+
+    alert("Esse ticket já está fechado.")
+    return
+  }
+
+  if(!confirm("Deseja finalizar este ticket e retirar 1 item do estoque?")) return
+
+  const productRef =
+    doc(db,"products",currentTicketData.productId)
+
+  const productSnap =
+    await getDoc(productRef)
+
+  if(!productSnap.exists()){
+
+    alert("Produto não encontrado.")
+    return
+  }
+
+  const product =
+    productSnap.data()
+
+  if(!product.accounts || product.accounts.length === 0){
+
+    alert("Produto sem estoque.")
+    return
+  }
+
+  const deliveredAccount =
+    product.accounts[0]
+
+  const updatedAccounts =
+    product.accounts.slice(1)
+
+  await updateDoc(productRef,{
+    accounts:updatedAccounts
+  })
+
+  await updateDoc(doc(db,"tickets",currentTicketId),{
+    status:"closed",
+    deliveredAccount:deliveredAccount,
+    updatedAt:serverTimestamp()
+  })
+
+  await addDoc(collection(db,"tickets",currentTicketId,"messages"),{
+    sender:"system",
+    senderEmail:"system",
+    text:"Ticket finalizado pelo administrador. Produto entregue manualmente.",
+    createdAt:serverTimestamp()
+  })
+
+  if(currentTicketData.orderId){
+
+    await updateDoc(doc(db,"orders1",currentTicketData.orderId),{
+      account:deliveredAccount,
+      status:"finalizado",
+      message:"Produto entregue manualmente pelo suporte."
+    })
+  }
+
+  currentTicketData.status =
+    "closed"
+
+  alert("Ticket finalizado, produto entregue e estoque atualizado.")
+}
+
+window.deleteTicket = async function(ticketId){
+
+  if(!confirm("Deseja deletar este ticket e todas as mensagens?")) return
+
+  const messagesSnap =
+    await getDocs(collection(db,"tickets",ticketId,"messages"))
+
+  for(const msgDoc of messagesSnap.docs){
+
+    await deleteDoc(doc(db,"tickets",ticketId,"messages",msgDoc.id))
+  }
+
+  await deleteDoc(doc(db,"tickets",ticketId))
+
+  alert("Ticket deletado.")
+}
+
+window.logout = function(){
+
+  auth.signOut()
+
+  window.location.href =
+    "index.html"
+}
+
+</script>
+
+</body>
+</html>

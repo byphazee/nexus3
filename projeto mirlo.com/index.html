@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NexusLoot</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+  font-family:Inter,sans-serif;
+  scroll-behavior:smooth;
+}
+
+body{
+  background:
+    radial-gradient(circle at top left, rgba(168,85,247,.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(34,211,238,.12), transparent 30%),
+    #030006;
+  color:white;
+  overflow-x:hidden;
+}
+
+.glow{
+  box-shadow:0 0 35px rgba(168,85,247,.45);
+}
+
+.product-card{
+  transition:.35s;
+}
+
+.product-card:hover{
+  transform:translateY(-8px);
+}
+
+.modal-bg{
+  background:rgba(0,0,0,.82);
+  backdrop-filter:blur(10px);
+}
+
+::-webkit-scrollbar{
+  width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#7c3aed;
+  border-radius:20px;
+}
+
+
+/* Mobile menu */
+#mobileMenu{
+  transition: all .3s cubic-bezier(.4,0,.2,1);
+}
+
+/* Category cards no mobile */
+.category-card{
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Skeleton loader */
+.skeleton{
+  background: linear-gradient(90deg, #1a1025 25%, #2a1a3a 50%, #1a1025 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 16px;
+}
+@keyframes shimmer{
+  0%{ background-position: 200% 0; }
+  100%{ background-position: -200% 0; }
+}
+
+/* Produto card no mobile sem hover transform */
+@media(max-width:640px){
+  .product-card:hover{
+    transform:none;
+  }
+  .product-card:active{
+    transform:scale(.98);
+  }
+}
+</style>
+
+</head>
+
+<body>
+
+<nav class="fixed top-0 left-0 w-full z-40 bg-black/60 backdrop-blur-xl border-b border-white/10">
+
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-5 flex items-center justify-between gap-3">
+
+    <!-- Logo -->
+    <h1 class="text-2xl md:text-4xl font-black bg-gradient-to-r from-purple-400 via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent shrink-0">
+      NexusLoot
+    </h1>
+
+    <!-- Desktop nav -->
+    <div class="hidden md:flex gap-5 items-center text-zinc-300 font-semibold">
+      <a href="#produtos" class="hover:text-white transition">Produtos</a>
+      <button id="ordersBtn" class="hover:text-white transition">Pedidos</button>
+      <button id="supportBtn" class="hover:text-white transition flex items-center gap-2">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+        </span>
+        Suporte
+      </button>
+    </div>
+
+    <!-- Right side -->
+    <div class="flex items-center gap-2 md:gap-3">
+
+      <!-- Carrinho -->
+      <button onclick="openCart()" class="relative hover:scale-105 duration-300">
+        <img src="carrinho.png" class="w-8 h-8 md:w-11 md:h-11 object-contain drop-shadow-[0_0_15px_rgba(168,85,247,.7)]">
+        <span id="cart-count" class="absolute -top-2 -right-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black">0</span>
+      </button>
+
+      <!-- Login btn desktop -->
+      <button id="loginBtn" class="hidden md:block bg-gradient-to-r from-purple-600 to-fuchsia-600 px-5 py-2.5 rounded-2xl font-bold glow text-sm">
+        Entrar
+      </button>
+
+      <!-- Hamburger mobile -->
+      <button id="menuBtn" class="md:hidden w-9 h-9 rounded-xl bg-white/10 border border-white/10 flex flex-col items-center justify-center gap-1.5">
+        <span class="w-4.5 h-0.5 bg-white rounded block" style="width:18px"></span>
+        <span class="w-4.5 h-0.5 bg-white rounded block" style="width:18px"></span>
+        <span class="w-4.5 h-0.5 bg-white rounded block" style="width:18px"></span>
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobileMenu" class="hidden md:hidden border-t border-white/10 bg-black/80 backdrop-blur-xl px-4 py-4 space-y-1">
+    <a href="#produtos" onclick="closeMobileMenu()" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 text-zinc-300 hover:text-white transition font-semibold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      Produtos
+    </a>
+    <button id="ordersBtnMobile" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 text-zinc-300 hover:text-white transition font-semibold text-left">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg>
+      Pedidos
+    </button>
+    <button id="supportBtnMobile" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-white/10 text-zinc-300 hover:text-white transition font-semibold text-left">
+      <span class="relative flex h-2 w-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+      </span>
+      Suporte
+    </button>
+    <div class="pt-2 border-t border-white/10">
+      <button id="loginBtnMobile" class="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 p-3 rounded-2xl font-bold glow text-sm">
+        Entrar
+      </button>
+    </div>
+  </div>
+
+</nav>
+<section class="min-h-screen flex items-center pt-24 md:pt-28 px-4 md:px-6 pb-10">
+
+  <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-14 items-center">
+
+    <div class="text-center lg:text-left">
+
+      <span class="inline-flex px-4 py-2 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 font-bold mb-5 text-sm">
+        #1 Marketplace Roblox
+      </span>
+
+      <h2 class="text-5xl sm:text-6xl md:text-8xl font-black leading-none">
+        DOMINE O
+        <span class="block bg-gradient-to-r from-purple-400 via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent">
+          ROBLOX
+        </span>
+      </h2>
+
+      <p class="text-zinc-400 text-base md:text-xl mt-6 max-w-xl mx-auto lg:mx-0">
+        Contas premium, frutas raras, gamepasses e produtos Roblox com pagamento PIX automático.
+      </p>
+
+      <div class="flex gap-3 mt-8 justify-center lg:justify-start flex-wrap">
+        <a href="#produtos" class="bg-gradient-to-r from-purple-600 to-fuchsia-600 px-6 md:px-8 py-3.5 md:py-4 rounded-2xl font-black glow text-sm md:text-base">
+          Comprar Agora
+        </a>
+        <button onclick="openCart()" class="bg-white/10 border border-white/10 hover:bg-white/15 px-6 py-3.5 rounded-2xl font-bold transition text-sm md:text-base">
+          Ver Carrinho
+        </button>
+      </div>
+
+    </div>
+
+    <div class="bg-zinc-900/70 border border-white/10 rounded-[28px] md:rounded-[35px] p-3 md:p-6 hidden sm:block">
+      <div class="h-[220px] sm:h-[300px] md:h-[420px] rounded-[20px] md:rounded-[28px] overflow-hidden bg-black">
+        <img src="nexusloot.png" class="w-full h-full object-cover">
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+<section id="produtos" class="max-w-7xl mx-auto px-4 md:px-6 py-16 md:py-24">
+
+  <div class="flex items-center justify-between gap-4 mb-10 flex-wrap">
+
+    <div>
+
+      <h2 class="text-4xl md:text-6xl font-black">
+        Produtos
+      </h2>
+
+      <p class="text-zinc-500 mt-3">
+        Escolha seus produtos Roblox premium.
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- FILTRO DE CATEGORIAS -->
+  <div
+    id="categoryFilter"
+    class="flex gap-4 overflow-x-auto pb-4 mb-10"
+    style="scrollbar-width:none;-webkit-overflow-scrolling:touch;"
+  ></div>
+
+  <div
+    id="products"
+    class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6"
+  ></div>
+
+</section>
+
+<!-- LOGIN MODAL -->
+<div
+  id="modal"
+  class="hidden fixed inset-0 modal-bg z-[9999] items-center justify-center px-4"
+>
+
+  <div class="w-full max-w-md max-h-[90vh] overflow-y-auto bg-[#0b0614] border border-purple-500/20 rounded-[28px] md:rounded-[35px] p-5 md:p-8">
+
+    <div class="mb-7">
+
+      <h2 class="text-3xl md:text-4xl font-black">
+        Entrar
+      </h2>
+
+      <p class="text-zinc-500 mt-2">
+        Acesse sua conta NexusLoot.
+      </p>
+
+    </div>
+
+    <input
+      id="email"
+      type="email"
+      placeholder="Email"
+      class="w-full p-4 mb-4 bg-zinc-900 border border-white/10 rounded-2xl outline-none focus:border-purple-500"
+    >
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Senha"
+      class="w-full p-4 mb-5 bg-zinc-900 border border-white/10 rounded-2xl outline-none focus:border-purple-500"
+    >
+
+    <button
+      id="login"
+      class="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 p-4 rounded-2xl font-black glow mb-3"
+    >
+      Entrar
+    </button>
+
+    <button
+      id="register"
+      class="w-full bg-cyan-600 hover:bg-cyan-500 p-4 rounded-2xl font-black"
+    >
+      Criar Conta
+    </button>
+
+    <button
+      id="close"
+      class="w-full mt-5 text-zinc-400 hover:text-white"
+    >
+      Fechar
+    </button>
+
+  </div>
+
+</div>
+<!-- CARRINHO MODAL -->
+<div
+  id="cartModal"
+  class="hidden fixed inset-0 modal-bg z-[9999] items-center justify-center px-4"
+>
+
+  <div class="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0b0614] border border-purple-500/20 rounded-[28px] md:rounded-[35px] p-5 md:p-8">
+
+    <div class="flex justify-between items-center mb-8">
+
+      <div>
+
+        <h2 class="text-3xl md:text-4xl font-black">
+          Carrinho
+        </h2>
+
+        <p class="text-zinc-500 mt-2">
+          Revise seus produtos antes do PIX.
+        </p>
+
+      </div>
+
+      <button
+        onclick="closeCart()"
+        class="text-zinc-400 hover:text-white text-3xl"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div
+      id="cart-items"
+      class="space-y-4 max-h-[400px] overflow-y-auto"
+    ></div>
+
+    <div class="border-t border-white/10 mt-8 pt-6">
+
+      <div class="flex justify-between items-center">
+
+        <p class="text-zinc-400 text-lg md:text-xl">
+          Total
+        </p>
+
+        <h3
+          id="cart-total"
+          class="text-3xl md:text-4xl font-black text-purple-400"
+        >
+          R$ 0
+        </h3>
+
+      </div>
+
+      <button
+        onclick="checkoutCart()"
+        class="w-full mt-6 bg-gradient-to-r from-purple-600 to-fuchsia-600 p-4 md:p-5 rounded-2xl font-black text-base md:text-lg glow"
+      >
+        Finalizar Compra
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- PIX MODAL -->
+<div
+  id="pixModal"
+  class="hidden fixed inset-0 modal-bg z-[99999] items-center justify-center px-4"
+>
+
+  <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[#0b0614] border border-purple-500/20 rounded-[28px] md:rounded-[35px] p-5 md:p-8">
+
+    <div class="flex justify-between items-center mb-6">
+
+      <div>
+
+        <h2 class="text-3xl md:text-4xl font-black">
+          Pagamento PIX
+        </h2>
+
+        <p class="text-zinc-500 mt-2">
+          Escaneie ou copie o código.
+        </p>
+
+      </div>
+
+      <button
+        onclick="closePix()"
+        class="text-zinc-400 hover:text-white text-3xl"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div class="relative w-[220px] h-[220px] md:w-[260px] md:h-[260px] mx-auto bg-white p-5 md:p-6 rounded-[30px] md:rounded-[35px] flex items-center justify-center">
+
+      <div id="qrcode" class="flex items-center justify-center"></div>
+
+      <img
+        src="nexusloot.png"
+        class="absolute top-1/2 left-1/2 w-11 h-11 md:w-12 md:h-12 object-cover rounded-full border-4 border-white shadow-2xl -translate-x-1/2 -translate-y-1/2"
+      >
+
+    </div>
+
+    <div class="mt-8">
+
+      <p class="text-zinc-400 mb-3">
+        PIX Copia e Cola
+      </p>
+
+      <textarea
+        id="pixCode"
+        readonly
+        class="w-full h-36 md:h-40 bg-zinc-900 border border-white/10 rounded-2xl p-4 outline-none resize-none text-sm"
+      ></textarea>
+
+      <button
+        onclick="copyPix()"
+        class="w-full mt-5 bg-cyan-600 hover:bg-cyan-500 p-4 rounded-2xl font-black"
+      >
+        Copiar PIX
+      </button>
+
+      <div class="mt-5 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-4 text-yellow-300 text-sm text-center">
+        O pagamento será aprovado automaticamente após a confirmação do PIX.
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- PEDIDOS -->
+<div
+  id="ordersModal"
+  class="hidden fixed inset-0 modal-bg z-[99999] items-center justify-center px-4"
+>
+
+  <div class="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-[#0b0614] border border-purple-500/20 rounded-[28px] md:rounded-[35px] p-5 md:p-8">
+
+    <div class="flex justify-between items-center mb-8">
+
+      <div>
+
+        <h2 class="text-3xl md:text-4xl font-black">
+          Meus Pedidos
+        </h2>
+
+        <p class="text-zinc-500 mt-2">
+          Acompanhe suas compras em tempo real.
+        </p>
+
+      </div>
+
+      <button
+        onclick="closeOrders()"
+        class="text-zinc-400 hover:text-white text-3xl"
+      >
+        ✕
+      </button>
+
+    </div>
+
+    <div
+      id="ordersContainer"
+      class="space-y-5"
+    ></div>
+
+  </div>
+
+</div>
+<!-- AVALIAÇÕES -->
+<section class="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20" id="avaliacoes">
+
+  <div class="text-center mb-10">
+    <span class="inline-flex px-4 py-2 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 font-bold text-sm mb-4">
+      Avaliações
+    </span>
+    <h2 class="text-3xl md:text-5xl font-black">O que dizem nossos clientes</h2>
+    <div id="reviewsStats" class="flex items-center justify-center gap-3 mt-4">
+      <div id="starsAvg" class="flex gap-1"></div>
+      <span id="avgText" class="text-zinc-400 text-sm font-bold"></span>
+    </div>
+  </div>
+
+  <!-- Formulário de avaliação -->
+  <div id="reviewForm" class="hidden bg-zinc-950/80 border border-purple-500/20 rounded-[28px] p-5 md:p-7 mb-8">
+    <h3 class="text-xl font-black mb-5">Deixe sua avaliação</h3>
+
+    <div class="flex gap-2 mb-5" id="starPicker">
+      ${[1,2,3,4,5].map(i=>`
+        <button onclick="window.pickStar(${i})" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="${i}">☆</button>
+      `).join("")}
+    </div>
+
+    <input
+      id="reviewName"
+      placeholder="Seu nome"
+      class="w-full p-4 mb-3 bg-zinc-900 border border-white/10 rounded-2xl outline-none focus:border-purple-500 text-sm"
+    >
+
+    <textarea
+      id="reviewText"
+      placeholder="Conte sua experiência..."
+      class="w-full h-24 p-4 mb-4 bg-zinc-900 border border-white/10 rounded-2xl outline-none resize-none focus:border-purple-500 text-sm"
+    ></textarea>
+
+    <button onclick="window.submitReview()" class="bg-gradient-to-r from-purple-600 to-fuchsia-600 px-7 py-3.5 rounded-2xl font-black glow text-sm">
+      Publicar Avaliação
+    </button>
+  </div>
+
+  <!-- Botão para abrir form -->
+  <div class="flex justify-center mb-8" id="openReviewBtn">
+    <button onclick="window.openReviewForm()" class="flex items-center gap-2 bg-white/10 border border-white/10 hover:bg-white/15 px-6 py-3 rounded-2xl font-bold transition text-sm">
+      <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Avaliar NexusLoot
+    </button>
+  </div>
+
+  <!-- Lista de avaliações -->
+  <div id="reviewsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+    <div class="col-span-full text-center text-zinc-600 py-10">Carregando avaliações...</div>
+  </div>
+
+</section>
+
+<!-- FOOTER simples -->
+<footer class="border-t border-white/10 bg-black/40">
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <h3 class="text-xl font-black bg-gradient-to-r from-purple-400 via-fuchsia-500 to-cyan-400 bg-clip-text text-transparent">NexusLoot</h3>
+    <p class="text-zinc-600 text-sm">© 2026 NexusLoot. Todos os direitos reservados.</p>
+    <div class="flex gap-4 text-zinc-500 text-sm">
+      <a href="#produtos" class="hover:text-white transition">Produtos</a>
+      <a href="#avaliacoes" class="hover:text-white transition">Avaliações</a>
+    </div>
+  </div>
+</footer>
+
+<script type="module">
+
+import { auth, db } from "./firebase.js"
+
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
+
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+
+const BACKEND_URL =
+  "https://nexus2-ulrn.onrender.com"
+
+const productsDiv =
+  document.getElementById("products")
+
+const ordersContainer =
+  document.getElementById("ordersContainer")
+
+const modal =
+  document.getElementById("modal")
+
+const loginBtn =
+  document.getElementById("loginBtn")
+
+let currentUser = null
+let cart = []
+let allProducts = []
+
+onAuthStateChanged(auth,user=>{
+
+  currentUser = user
+
+  if(user){
+
+    loginBtn.innerHTML = `
+      <span class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-green-400 inline-block"></span>
+        ${user.email.split("@")[0]}
+        <svg class="w-3 h-3 opacity-60" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </span>
+    `
+    document.getElementById("loginBtnMobile").innerText = user.email.split("@")[0]
+
+    loadOrders()
+
+  }else{
+
+    loginBtn.innerHTML = "Entrar"
+    document.getElementById("loginBtnMobile").innerText = "Entrar"
+  }
+})
+
+// Mostrar skeletons enquanto carrega
+;(function showSkeletons(){
+  const skeletons = Array(4).fill(0).map(()=>`
+    <div class="product-card bg-zinc-900/80 rounded-[28px] overflow-hidden border border-white/10">
+      <div class="skeleton h-28 md:h-44 w-full"></div>
+      <div class="p-3 md:p-6 space-y-3">
+        <div class="skeleton h-4 w-2/3"></div>
+        <div class="skeleton h-5 w-full"></div>
+        <div class="skeleton h-4 w-1/2"></div>
+        <div class="skeleton h-9 w-full mt-2"></div>
+      </div>
+    </div>
+  `).join("")
+  document.getElementById("products").innerHTML = skeletons
+})()
+
+onSnapshot(collection(db,"products"),snapshot=>{
+
+  allProducts = []
+
+  snapshot.forEach(docSnap=>{
+
+    const product = {
+      id:docSnap.id,
+      ...docSnap.data()
+    }
+
+    allProducts.push(product)
+  })
+
+  buildCategoryFilter(allProducts)
+  renderProducts(allProducts)
+})
+
+let activeCategory = "Todos"
+
+function buildCategoryFilter(productsList){
+
+  const filterDiv =
+    document.getElementById("categoryFilter")
+
+  // Montar mapa de categorias únicas
+  const categoriesMap = {}
+
+  productsList.forEach(product=>{
+
+    const cat = product.category || "Sem categoria"
+
+    if(!categoriesMap[cat]){
+      categoriesMap[cat] =
+        product.categoryImage || product.image || ""
+    }
+  })
+
+  const categories = Object.keys(categoriesMap)
+
+  filterDiv.innerHTML = ""
+
+  // Card "Todos"
+  const allImage = "nexusloot.png"
+
+  filterDiv.innerHTML += buildCategoryCard(
+    "Todos",
+    allImage,
+    activeCategory === "Todos"
+  )
+
+  categories.forEach(cat=>{
+
+    filterDiv.innerHTML += buildCategoryCard(
+      cat,
+      categoriesMap[cat],
+      activeCategory === cat
+    )
+  })
+}
+
+function buildCategoryCard(name, image, isActive){
+
+  return `
+    <button
+      onclick="selectCategory('${name}')"
+      class="category-card shrink-0 relative w-36 h-24 md:w-44 md:h-28 rounded-[22px] overflow-hidden border-2 transition-all duration-300 ${
+        isActive
+          ? "border-purple-500 scale-105 shadow-[0_0_20px_rgba(168,85,247,.6)]"
+          : "border-white/10 hover:border-purple-500/50 hover:scale-105"
+      }"
+      style="background:#0b0614;"
+    >
+      ${image ? `
+        <img
+          src="${image}"
+          class="absolute inset-0 w-full h-full object-cover opacity-70"
+          onerror="this.style.display='none'"
+        >
+      ` : ""}
+
+      <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+
+      ${isActive ? `
+        <div class="absolute top-2 right-2 w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center">
+          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+            <path d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+      ` : ""}
+
+      <span class="absolute bottom-3 left-0 right-0 text-center text-white font-black text-sm md:text-base px-2 drop-shadow-lg">
+        ${name}
+      </span>
+
+    </button>
+  `
+}
+
+window.selectCategory = function(cat){
+
+  activeCategory = cat
+
+  buildCategoryFilter(allProducts)
+
+  const filtered =
+    cat === "Todos"
+      ? allProducts
+      : allProducts.filter(p=>(p.category || "Sem categoria") === cat)
+
+  renderProducts(filtered)
+}
+
+function renderProducts(productsList){
+
+  productsDiv.innerHTML = ""
+
+  if(productsList.length === 0){
+
+    productsDiv.innerHTML = `
+      <div class="col-span-full bg-white/5 border border-white/10 rounded-3xl p-10 text-center">
+        <h3 class="text-2xl md:text-3xl font-black">
+          Nenhum produto encontrado
+        </h3>
+      </div>
+    `
+
+    return
+  }
+
+  productsList.forEach(product=>{
+
+    productsDiv.innerHTML += `
+      <div class="product-card bg-zinc-900/80 rounded-[28px] overflow-hidden border border-white/10">
+
+        <div class="relative h-28 md:h-44 bg-black overflow-hidden">
+          <img src="${product.image}" class="w-full h-full object-cover">
+        </div>
+
+        <div class="p-3 md:p-6">
+
+          <div class="flex gap-1.5 mb-2 flex-wrap">
+            <span class="bg-purple-600 text-[10px] md:text-xs px-2 py-0.5 rounded-full font-black">
+              ${product.category || "Roblox"}
+            </span>
+            <span class="bg-zinc-700 text-[10px] md:text-xs px-2 py-0.5 rounded-full font-black">
+              ${product.type || "auto"}
+            </span>
+          </div>
+
+          <h3 class="text-sm md:text-2xl font-black leading-tight">
+            ${product.name}
+          </h3>
+
+          <p class="text-zinc-400 mt-1.5 text-xs md:text-base line-clamp-2 hidden sm:block">
+            ${product.description || "Sem descrição"}
+          </p>
+
+          <p class="text-zinc-400 mt-1.5 text-xs md:text-base">
+            Estoque: <span class="text-green-400 font-bold">${product.accounts?.length || 0}</span>
+          </p>
+
+          <p class="text-lg md:text-4xl text-purple-400 font-black mt-2 md:mt-5">
+            R$ ${Number(product.price).toFixed(2)}
+          </p>
+
+          ${(product.accounts?.length || 0) > 0 ? `
+          <button
+            onclick='addToCart(${JSON.stringify(product)})'
+            class="w-full mt-3 md:mt-6 bg-gradient-to-r from-purple-600 to-fuchsia-600 p-2.5 md:p-4 rounded-xl md:rounded-2xl font-black glow text-xs md:text-base"
+          >
+            + Carrinho
+          </button>
+          ` : `
+          <button disabled class="w-full mt-3 md:mt-6 bg-zinc-800 text-zinc-500 p-2.5 md:p-4 rounded-xl md:rounded-2xl font-black text-xs md:text-base cursor-not-allowed">
+            Sem Estoque
+          </button>
+          `}
+
+        </div>
+
+      </div>
+    `
+  })
+}
+window.addToCart = function(product){
+
+  cart.push(product)
+
+  updateCart()
+
+  showToast("Produto adicionado ao carrinho!")
+}
+
+function updateCart(){
+
+  document.getElementById("cart-count").innerText =
+    cart.length
+
+  const cartItems =
+    document.getElementById("cart-items")
+
+  const cartTotal =
+    document.getElementById("cart-total")
+
+  cartItems.innerHTML = ""
+
+  let total = 0
+
+  if(cart.length === 0){
+
+    cartItems.innerHTML = `
+      <div class="bg-white/5 border border-white/10 rounded-3xl p-8 text-center text-zinc-400">
+        Seu carrinho está vazio.
+      </div>
+    `
+
+    cartTotal.innerText =
+      "R$ 0"
+
+    return
+  }
+
+  cart.forEach((item,index)=>{
+
+    total += Number(item.price)
+
+    cartItems.innerHTML += `
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex justify-between items-center gap-4">
+
+        <div class="flex gap-4 items-center min-w-0">
+
+          <img
+            src="${item.image}"
+            class="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover shrink-0"
+          >
+
+          <div class="min-w-0">
+
+            <h3 class="font-black text-base md:text-xl truncate">
+              ${item.name}
+            </h3>
+
+            <p class="text-purple-400 font-bold text-sm md:text-base">
+              R$ ${Number(item.price).toFixed(2)}
+            </p>
+
+          </div>
+
+        </div>
+
+        <button
+          onclick="removeCart(${index})"
+          class="bg-red-600 hover:bg-red-500 px-3 md:px-4 py-2 rounded-xl font-bold text-sm md:text-base shrink-0"
+        >
+          Remover
+        </button>
+
+      </div>
+    `
+  })
+
+  cartTotal.innerText =
+    `R$ ${total.toFixed(2)}`
+}
+
+window.removeCart = function(index){
+
+  cart.splice(index,1)
+
+  updateCart()
+
+  showToast("Produto removido do carrinho.")
+}
+
+window.openCart = function(){
+
+  updateCart()
+
+  document
+    .getElementById("cartModal")
+    .classList.remove("hidden")
+
+  document
+    .getElementById("cartModal")
+    .classList.add("flex")
+}
+
+window.closeCart = function(){
+
+  document
+    .getElementById("cartModal")
+    .classList.add("hidden")
+
+  document
+    .getElementById("cartModal")
+    .classList.remove("flex")
+}
+
+window.checkoutCart = async function(){
+
+  if(!currentUser){
+
+    showToast("Faça login para finalizar.")
+
+    modal.classList.remove("hidden")
+    modal.classList.add("flex")
+
+    return
+  }
+
+  if(cart.length === 0){
+
+    showToast("Carrinho vazio.")
+    return
+  }
+
+  try{
+
+    const response = await fetch(
+      BACKEND_URL + "/create-pix",
+      {
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+          cart,
+          userEmail:currentUser.email,
+          payerName:currentUser.email.split("@")[0],
+          payerDocument:"00000000000"
+        })
+      }
+    )
+
+    const data =
+      await response.json()
+
+    if(!data.success){
+
+      console.log(data)
+
+      showToast("Erro ao gerar PIX.")
+      return
+    }
+
+    document.getElementById("pixCode").value =
+      data.pixCode
+
+    document
+      .getElementById("pixModal")
+      .classList.remove("hidden")
+
+    document
+      .getElementById("pixModal")
+      .classList.add("flex")
+
+    document.getElementById("qrcode").innerHTML =
+      ""
+
+    new QRCode(document.getElementById("qrcode"),{
+      text:data.pixCode,
+      width:180,
+      height:180
+    })
+
+    cart = []
+
+    updateCart()
+
+    closeCart()
+
+    showToast("PIX gerado com sucesso!")
+
+  }catch(error){
+
+    console.log(error)
+
+    showToast("Erro ao conectar ao servidor.")
+  }
+}
+
+window.closePix = function(){
+
+  document
+    .getElementById("pixModal")
+    .classList.add("hidden")
+
+  document
+    .getElementById("pixModal")
+    .classList.remove("flex")
+}
+
+window.copyPix = function(){
+
+  const textarea =
+    document.getElementById("pixCode")
+
+  textarea.select()
+
+  document.execCommand("copy")
+
+  showToast("PIX copiado com sucesso!")
+}
+function loadOrders(){
+
+  if(!currentUser) return
+
+  const q = query(
+    collection(db,"orders1"),
+    where("userEmail","==",currentUser.email)
+  )
+
+  onSnapshot(q,snapshot=>{
+
+    ordersContainer.innerHTML = ""
+
+    if(snapshot.empty){
+
+      ordersContainer.innerHTML = `
+        <div class="bg-white/5 border border-white/10 rounded-3xl p-8 text-center text-zinc-400">
+          Nenhum pedido ainda.
+        </div>
+      `
+
+      return
+    }
+
+    snapshot.forEach(docSnap=>{
+
+      const order =
+        docSnap.data()
+
+      ordersContainer.innerHTML += `
+        <div class="bg-black/40 border border-white/10 rounded-3xl p-5 md:p-6">
+
+          <div class="flex flex-wrap justify-between gap-4 items-start">
+
+            <div>
+
+              <h3 class="text-xl md:text-2xl font-black">
+                ${order.product}
+              </h3>
+
+              <p class="text-zinc-400 mt-2">
+                Status:
+                <span class="text-purple-400 font-bold">
+                  ${order.status}
+                </span>
+              </p>
+
+              <p class="text-zinc-400 mt-3 text-sm md:text-base">
+                ${order.message || ""}
+              </p>
+
+            </div>
+
+            <p class="text-green-400 text-xl md:text-2xl font-black">
+              R$ ${Number(order.price).toFixed(2)}
+            </p>
+
+          </div>
+
+          ${
+            order.account
+            ? `
+              <div class="mt-5 bg-zinc-900 border border-green-500/20 p-4 rounded-2xl font-mono text-green-400 break-all text-sm">
+                ${order.account}
+              </div>
+            `
+            : ""
+          }
+
+          ${
+            order.ticketId
+            ? `
+              <a
+                href="chat.html?ticket=${order.ticketId}"
+                class="inline-block mt-5 bg-gradient-to-r from-purple-600 to-fuchsia-600 px-6 py-3 rounded-2xl font-black glow"
+              >
+                Abrir Suporte
+              </a>
+            `
+            : ""
+          }
+
+        </div>
+      `
+    })
+  })
+}
+
+document.getElementById("supportBtn").onclick = async function(){
+
+  if(!currentUser){
+    showToast("Faça login para abrir um suporte.")
+    modal.classList.remove("hidden")
+    modal.classList.add("flex")
+    return
+  }
+
+  // Verificar se já tem ticket aberto
+  const q = query(
+    collection(db,"tickets"),
+    where("userEmail","==",currentUser.email),
+    where("status","==","open")
+  )
+
+  const snap = await getDocs(q)
+
+  if(!snap.empty){
+    // Já tem ticket aberto, redireciona pra ele
+    const ticketId = snap.docs[0].id
+    window.location.href = "chat.html?ticket=" + ticketId
+    return
+  }
+
+  // Verificar se tem ticket "em suporte" (status diferente de open mas ainda não closed)
+  const q2 = query(
+    collection(db,"tickets"),
+    where("userEmail","==",currentUser.email),
+    where("status","==","em suporte")
+  )
+
+  const snap2 = await getDocs(q2)
+
+  if(!snap2.empty){
+    const ticketId = snap2.docs[0].id
+    window.location.href = "chat.html?ticket=" + ticketId
+    return
+  }
+
+  // Criar novo ticket geral de suporte
+  const ticketRef = await addDoc(collection(db,"tickets"),{
+    userEmail: currentUser.email,
+    product: "Suporte Geral",
+    productId: "",
+    orderId: "",
+    status: "open",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  })
+
+  await addDoc(collection(db,"tickets",ticketRef.id,"messages"),{
+    sender: "system",
+    senderEmail: "system",
+    text: "Suporte iniciado. Um administrador irá atendê-lo em breve.",
+    createdAt: serverTimestamp()
+  })
+
+  window.location.href = "chat.html?ticket=" + ticketRef.id
+}
+
+document.getElementById("ordersBtn").onclick = function(){
+
+  if(!currentUser){
+
+    showToast("Faça login para ver seus pedidos.")
+
+    modal.classList.remove("hidden")
+    modal.classList.add("flex")
+
+    return
+  }
+
+  document
+    .getElementById("ordersModal")
+    .classList.remove("hidden")
+
+  document
+    .getElementById("ordersModal")
+    .classList.add("flex")
+}
+
+window.closeOrders = function(){
+
+  document
+    .getElementById("ordersModal")
+    .classList.add("hidden")
+
+  document
+    .getElementById("ordersModal")
+    .classList.remove("flex")
+}
+
+loginBtn.onclick = function(){
+  if(currentUser){
+    const existing = document.getElementById("logoutDropdown")
+    if(existing){ existing.remove(); return }
+    const dropdown = document.createElement("div")
+    dropdown.id = "logoutDropdown"
+    dropdown.className = "absolute top-16 right-4 md:right-6 z-[99999] bg-[#0b0614] border border-white/10 rounded-2xl p-2 shadow-2xl shadow-purple-950/40 min-w-[180px]"
+    dropdown.innerHTML = `
+      <div class="px-3 py-2 text-zinc-500 text-xs font-bold border-b border-white/10 mb-1 truncate">${currentUser.email}</div>
+      <button onclick="window.doLogout()" class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-white/10 text-red-400 font-bold text-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v1"/></svg>
+        Sair da conta
+      </button>
+    `
+    document.body.appendChild(dropdown)
+    setTimeout(()=>{
+      document.addEventListener("click", function handler(e){
+        if(!dropdown.contains(e.target) && e.target !== loginBtn){
+          dropdown.remove()
+          document.removeEventListener("click", handler)
+        }
+      })
+    }, 10)
+    return
+  }
+  modal.classList.remove("hidden")
+  modal.classList.add("flex")
+}
+
+window.doLogout = async function(){
+  const {signOut} = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")
+  await signOut(auth)
+  document.getElementById("logoutDropdown")?.remove()
+  showToast("Até logo!")
+}
+
+document.getElementById("close").onclick = function(){
+
+  modal.classList.add("hidden")
+  modal.classList.remove("flex")
+}
+
+document.getElementById("register").onclick = async function(){
+
+  const email =
+    document.getElementById("email").value.trim()
+
+  const password =
+    document.getElementById("password").value.trim()
+
+  if(!email || !password){
+
+    showToast("Preencha email e senha.")
+    return
+  }
+
+  try{
+
+    await createUserWithEmailAndPassword(auth,email,password)
+
+    showToast("Conta criada com sucesso!")
+
+    modal.classList.add("hidden")
+    modal.classList.remove("flex")
+
+  }catch(error){
+
+    showToast(error.message)
+  }
+}
+
+document.getElementById("login").onclick = async function(){
+
+  const email =
+    document.getElementById("email").value.trim()
+
+  const password =
+    document.getElementById("password").value.trim()
+
+  if(!email || !password){
+
+    showToast("Preencha email e senha.")
+    return
+  }
+
+  try{
+
+    await signInWithEmailAndPassword(auth,email,password)
+
+    if(email === "byphaze@dono.com"){
+
+      window.location.href =
+        "admin.html"
+
+      return
+    }
+
+    showToast("Login realizado com sucesso!")
+
+    modal.classList.add("hidden")
+    modal.classList.remove("flex")
+
+  }catch(error){
+
+    showToast(error.message)
+  }
+}
+// Menu mobile
+document.getElementById("menuBtn").onclick = function(){
+  const menu = document.getElementById("mobileMenu")
+  menu.classList.toggle("hidden")
+}
+
+window.closeMobileMenu = function(){
+  document.getElementById("mobileMenu").classList.add("hidden")
+}
+
+// Sincronizar loginBtn mobile
+document.getElementById("loginBtnMobile").onclick = function(){
+  closeMobileMenu()
+  modal.classList.remove("hidden")
+  modal.classList.add("flex")
+}
+
+// Sincronizar ordersBtn mobile
+document.getElementById("ordersBtnMobile").onclick = function(){
+  closeMobileMenu()
+  document.getElementById("ordersBtn").click()
+}
+
+// Sincronizar supportBtn mobile
+document.getElementById("supportBtnMobile").onclick = function(){
+  closeMobileMenu()
+  document.getElementById("supportBtn").click()
+}
+
+// Fechar menu ao clicar fora
+document.addEventListener("click", function(e){
+  const menu = document.getElementById("mobileMenu")
+  const btn = document.getElementById("menuBtn")
+  if(!menu.contains(e.target) && !btn.contains(e.target)){
+    menu.classList.add("hidden")
+  }
+})
+
+// ===== SISTEMA DE AVALIAÇÕES =====
+
+let selectedStar = 0
+
+window.openReviewForm = function(){
+  if(!currentUser){
+    showToast("Faça login para avaliar.")
+    modal.classList.remove("hidden")
+    modal.classList.add("flex")
+    return
+  }
+  document.getElementById("reviewForm").classList.remove("hidden")
+  document.getElementById("openReviewBtn").classList.add("hidden")
+}
+
+window.pickStar = function(n){
+  selectedStar = n
+  document.querySelectorAll(".star-btn").forEach((btn,i)=>{
+    btn.textContent = i < n ? "★" : "☆"
+    btn.style.color = i < n ? "#facc15" : ""
+  })
+}
+
+window.submitReview = async function(){
+  if(!currentUser){ showToast("Faça login para avaliar."); return }
+  if(selectedStar === 0){ showToast("Escolha uma nota de 1 a 5 estrelas."); return }
+
+  const name = document.getElementById("reviewName").value.trim()
+  const text = document.getElementById("reviewText").value.trim()
+
+  if(!name){ showToast("Digite seu nome."); return }
+  if(!text){ showToast("Escreva sua avaliação."); return }
+
+  try{
+    await addDoc(collection(db,"reviews"),{
+      name,
+      text,
+      stars: selectedStar,
+      userEmail: currentUser.email,
+      createdAt: serverTimestamp()
+    })
+
+    document.getElementById("reviewForm").classList.add("hidden")
+    document.getElementById("openReviewBtn").classList.remove("hidden")
+    document.getElementById("reviewName").value = ""
+    document.getElementById("reviewText").value = ""
+    document.getElementById("starPicker").querySelectorAll(".star-btn").forEach(b=>{ b.textContent="☆"; b.style.color="" })
+    selectedStar = 0
+
+    showToast("Avaliação publicada! Obrigado 🙏")
+
+  }catch(e){
+    showToast("Erro ao publicar avaliação.")
+  }
+}
+
+function starsHtml(n, size="text-base"){
+  return Array(5).fill(0).map((_,i)=>`
+    <span class="${size} ${i < n ? "text-yellow-400" : "text-zinc-700"}">${i < n ? "★" : "☆"}</span>
+  `).join("")
+}
+
+onSnapshot(
+  collection(db,"reviews"),
+  snapshot=>{
+    const reviews = []
+    snapshot.forEach(d=> reviews.push({ id:d.id, ...d.data() }))
+
+    // Ordenar por mais recente
+    reviews.sort((a,b)=>{
+      const ta = a.createdAt?.seconds || 0
+      const tb = b.createdAt?.seconds || 0
+      return tb - ta
+    })
+
+    // Stats
+    const avg = reviews.length
+      ? (reviews.reduce((s,r)=>s+r.stars,0)/reviews.length).toFixed(1)
+      : null
+
+    const starsAvg = document.getElementById("starsAvg")
+    const avgText = document.getElementById("avgText")
+
+    if(avg){
+      starsAvg.innerHTML = starsHtml(Math.round(avg), "text-xl")
+      avgText.textContent = `${avg} de 5 • ${reviews.length} avaliação${reviews.length!==1?"ões":""}`
+    } else {
+      starsAvg.innerHTML = ""
+      avgText.textContent = "Seja o primeiro a avaliar!"
+    }
+
+    // Lista
+    const list = document.getElementById("reviewsList")
+
+    if(reviews.length === 0){
+      list.innerHTML = `
+        <div class="col-span-full text-center text-zinc-600 py-10">
+          <p class="text-4xl mb-3">⭐</p>
+          <p class="font-bold">Nenhuma avaliação ainda. Seja o primeiro!</p>
+        </div>
+      `
+      return
+    }
+
+    list.innerHTML = reviews.map(r=>`
+      <div class="bg-zinc-950/80 border border-white/10 rounded-[24px] p-5 hover:border-purple-500/20 transition">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600/40 to-fuchsia-600/30 border border-purple-500/20 flex items-center justify-center font-black text-purple-300 shrink-0">
+              ${r.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p class="font-black text-sm">${r.name}</p>
+              <div class="flex gap-0.5 mt-0.5">${starsHtml(r.stars,"text-sm")}</div>
+            </div>
+          </div>
+        </div>
+        <p class="text-zinc-400 text-sm leading-relaxed">${r.text}</p>
+      </div>
+    `).join("")
+  }
+)
+
+// ===== FIM AVALIAÇÕES =====
+
+function showToast(message){
+
+  const oldToast =
+    document.querySelector(".toast")
+
+  if(oldToast){
+    oldToast.remove()
+  }
+
+  const toast =
+    document.createElement("div")
+
+  toast.className =
+    "toast fixed top-5 right-5 z-[999999] bg-[#0b0614]/95 border border-purple-500/30 backdrop-blur-xl rounded-3xl p-4 shadow-2xl shadow-purple-950/40 max-w-[90vw] md:max-w-md transition"
+
+  toast.innerHTML = `
+    <div class="flex items-center gap-4">
+
+      <div class="w-11 h-11 rounded-2xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-300 font-black text-xl shrink-0">
+        ✓
+      </div>
+
+      <div>
+        <h3 class="font-black text-base md:text-lg">
+          NexusLoot
+        </h3>
+
+        <p class="text-zinc-300 text-sm md:text-base">
+          ${message}
+        </p>
+      </div>
+
+    </div>
+  `
+
+  document.body.appendChild(toast)
+
+  setTimeout(()=>{
+
+    toast.style.opacity =
+      "0"
+
+    toast.style.transform =
+      "translateX(60px) scale(.95)"
+
+    setTimeout(()=>{
+
+      toast.remove()
+
+    },300)
+
+  },3000)
+}
+
+</script>
+
+</body>
+</html>
