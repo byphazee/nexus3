@@ -87,11 +87,182 @@ body{
     transform:scale(.98);
   }
 }
+
+/* ===== WELCOME SCREEN ===== */
+#welcomeScreen {
+  background: #030006;
+  transition: opacity 0.7s ease;
+}
+
+/* Partículas flutuantes */
+.particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.particles span {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: floatParticle linear infinite;
+  opacity: 0;
+}
+@keyframes floatParticle {
+  0%   { transform: translateY(0) scale(0);   opacity: 0; }
+  8%   { opacity: 1; }
+  85%  { opacity: 0.55; }
+  100% { transform: translateY(-115vh) scale(1.3); opacity: 0; }
+}
+
+/* Orbs de glow responsivos */
+.welcome-orb-1 {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgba(168,85,247,.22);
+  filter: blur(70px);
+  width: min(320px, 60vw);
+  height: min(320px, 60vw);
+  top: 15%; left: 5%;
+  animation: orbPulse 4s ease-in-out infinite alternate;
+}
+.welcome-orb-2 {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgba(34,211,238,.15);
+  filter: blur(70px);
+  width: min(260px, 50vw);
+  height: min(260px, 50vw);
+  bottom: 15%; right: 5%;
+  animation: orbPulse 5s ease-in-out infinite alternate-reverse;
+}
+@keyframes orbPulse {
+  from { transform: scale(1); opacity: .7; }
+  to   { transform: scale(1.15); opacity: 1; }
+}
+
+/* Gradiente animado no logo */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+#welcomeLogo {
+  background: linear-gradient(270deg, #a855f7, #ec4899, #22d3ee, #a855f7);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 3s ease infinite;
+  opacity: 0;
+  transform: translateY(28px) scale(0.92);
+  transition: opacity 0.85s cubic-bezier(.23,1,.32,1),
+              transform 0.85s cubic-bezier(.23,1,.32,1);
+  /* garante que não quebre em telas muito pequenas */
+  word-break: keep-all;
+  white-space: nowrap;
+  font-size: clamp(2.4rem, 12vw, 7rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+#welcomeLogo.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+#welcomeTagline {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+  font-size: clamp(0.65rem, 2.5vw, 1rem);
+  letter-spacing: 0.2em;
+  color: rgba(161,161,170,.75);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: clamp(10px, 2vw, 20px);
+}
+#welcomeTagline.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#welcomeBar {
+  height: 3px;
+  width: clamp(50px, 12vw, 90px);
+  background: linear-gradient(90deg, #a855f7, #22d3ee);
+  border-radius: 99px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.85s cubic-bezier(.23,1,.32,1);
+  margin: clamp(12px, 2.5vw, 22px) auto 0;
+}
+#welcomeBar.show {
+  transform: scaleX(1);
+}
+
+/* Sem hover transform no mobile para a welcome */
+@media (max-width: 640px) {
+  #welcomeLogo {
+    font-size: clamp(2.2rem, 14vw, 4rem);
+  }
+}
 </style>
 
 </head>
 
 <body>
+
+<!-- WELCOME SCREEN -->
+<div id="welcomeScreen" class="fixed inset-0 z-[99999] flex items-center justify-center overflow-hidden">
+  <div class="particles" id="particles" aria-hidden="true"></div>
+  <div class="welcome-orb-1"></div>
+  <div class="welcome-orb-2"></div>
+  <div style="text-align:center;position:relative;z-index:10;padding:0 16px;width:100%;">
+    <h1 id="welcomeLogo">NexusLoot</h1>
+    <p id="welcomeTagline">#1 Marketplace Roblox</p>
+    <div id="welcomeBar"></div>
+  </div>
+</div>
+
+<script>
+// ===== WELCOME SCREEN — executa imediatamente =====
+(function(){
+  var colors = ["#a855f7","#ec4899","#22d3ee","#7c3aed","#06b6d4","#f0abfc"]
+  var container = document.getElementById("particles")
+  var isMobile = window.innerWidth < 640
+  var count = isMobile ? 16 : 32
+
+  for(var i = 0; i < count; i++){
+    var s = document.createElement("span")
+    var size = Math.random() * (isMobile ? 5 : 7) + 2
+    s.style.cssText =
+      "width:"+size+"px;"+
+      "height:"+size+"px;"+
+      "left:"+(Math.random()*100)+"%;"+
+      "bottom:"+(-5 + Math.random()*15)+"%;"+
+      "background:"+colors[Math.floor(Math.random()*colors.length)]+";"+
+      "animation-duration:"+(Math.random()*5+4)+"s;"+
+      "animation-delay:"+(Math.random()*2.5)+"s;"
+    container.appendChild(s)
+  }
+
+  setTimeout(function(){
+    document.getElementById("welcomeLogo").classList.add("show")
+  }, 150)
+
+  setTimeout(function(){
+    document.getElementById("welcomeTagline").classList.add("show")
+    document.getElementById("welcomeBar").classList.add("show")
+  }, 550)
+
+  setTimeout(function(){
+    var screen = document.getElementById("welcomeScreen")
+    screen.style.opacity = "0"
+    setTimeout(function(){ if(screen.parentNode) screen.remove() }, 750)
+  }, 2600)
+})()
+</script>
 
 <nav class="fixed top-0 left-0 w-full z-40 bg-black/60 backdrop-blur-xl border-b border-white/10">
 
@@ -492,9 +663,11 @@ body{
     <h3 class="text-xl font-black mb-5">Deixe sua avaliação</h3>
 
     <div class="flex gap-2 mb-5" id="starPicker">
-      ${[1,2,3,4,5].map(i=>`
-        <button onclick="window.pickStar(${i})" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="${i}">☆</button>
-      `).join("")}
+      <button onclick="window.pickStar(1)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="1">☆</button>
+      <button onclick="window.pickStar(2)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="2">☆</button>
+      <button onclick="window.pickStar(3)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="3">☆</button>
+      <button onclick="window.pickStar(4)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="4">☆</button>
+      <button onclick="window.pickStar(5)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="5">☆</button>
     </div>
 
     <input
