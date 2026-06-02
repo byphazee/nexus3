@@ -490,14 +490,14 @@ body{
   <!-- Formulário de avaliação -->
   <div id="reviewForm" class="hidden bg-zinc-950/80 border border-purple-500/20 rounded-[28px] p-5 md:p-7 mb-8">
     <h3 class="text-xl font-black mb-5">Deixe sua avaliação</h3>
-    
- <div class="flex gap-2 mb-5" id="starPicker">
-  <button onclick="window.pickStar(1)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="1">☆</button>
-  <button onclick="window.pickStar(2)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="2">☆</button>
-  <button onclick="window.pickStar(3)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="3">☆</button>
-  <button onclick="window.pickStar(4)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="4">☆</button>
-  <button onclick="window.pickStar(5)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="5">☆</button>
-</div>
+
+    <div class="flex gap-2 mb-5" id="starPicker">
+      <button onclick="window.pickStar(1)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="1">☆</button>
+      <button onclick="window.pickStar(2)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="2">☆</button>
+      <button onclick="window.pickStar(3)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="3">☆</button>
+      <button onclick="window.pickStar(4)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="4">☆</button>
+      <button onclick="window.pickStar(5)" class="star-btn text-3xl md:text-4xl transition hover:scale-110" data-star="5">☆</button>
+    </div>
 
     <input
       id="reviewName"
@@ -939,14 +939,6 @@ window.checkoutCart = async function(){
     return
   }
 
-  const btn = document.querySelector('[onclick="checkoutCart()"]')
-  if(btn){
-    if(btn.disabled) return
-    btn.disabled = true
-    btn.innerText = "Gerando PIX..."
-    btn.classList.add("opacity-60","cursor-not-allowed")
-  }
-
   try{
 
     const response = await fetch(
@@ -1011,14 +1003,6 @@ window.checkoutCart = async function(){
     console.log(error)
 
     showToast("Erro ao conectar ao servidor.")
-
-  }finally{
-
-    if(btn){
-      btn.disabled = false
-      btn.innerText = "Finalizar Compra"
-      btn.classList.remove("opacity-60","cursor-not-allowed")
-    }
   }
 }
 
@@ -1394,35 +1378,55 @@ window.pickStar = function(n){
 }
 
 window.submitReview = async function(){
-  if(!currentUser){ showToast("Faça login para avaliar."); return }
-  if(selectedStar === 0){ showToast("Escolha uma nota de 1 a 5 estrelas."); return }
+  if(!currentUser){
+    showToast("Faça login para avaliar.")
+    return
+  }
+
+  if(selectedStar === 0){
+    showToast("Escolha uma nota de 1 a 5 estrelas.")
+    return
+  }
 
   const name = document.getElementById("reviewName").value.trim()
   const text = document.getElementById("reviewText").value.trim()
 
-  if(!name){ showToast("Digite seu nome."); return }
-  if(!text){ showToast("Escreva sua avaliação."); return }
+  if(!name){
+    showToast("Digite seu nome.")
+    return
+  }
+
+  if(!text){
+    showToast("Escreva sua avaliação.")
+    return
+  }
 
   try{
     await addDoc(collection(db,"reviews"),{
-      name,
-      text,
-      stars: selectedStar,
-      userEmail: currentUser.email,
-      createdAt: serverTimestamp()
+      name: name,
+      text: text,
+      stars: Number(selectedStar),
+      userEmail: currentUser.email
     })
 
     document.getElementById("reviewForm").classList.add("hidden")
     document.getElementById("openReviewBtn").classList.remove("hidden")
     document.getElementById("reviewName").value = ""
     document.getElementById("reviewText").value = ""
-    document.getElementById("starPicker").querySelectorAll(".star-btn").forEach(b=>{ b.textContent="☆"; b.style.color="" })
+
+    document.getElementById("starPicker").querySelectorAll(".star-btn").forEach(b=>{
+      b.textContent = "☆"
+      b.style.color = ""
+    })
+
     selectedStar = 0
 
     showToast("Avaliação publicada! Obrigado 🙏")
 
   }catch(e){
-    showToast("Erro ao publicar avaliação.")
+    console.error("ERRO REAL AO PUBLICAR:", e)
+    alert("Erro real: " + (e.code || "") + " - " + (e.message || e))
+    showToast(e.code || "Erro ao publicar avaliação.")
   }
 }
 
